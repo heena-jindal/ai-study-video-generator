@@ -1,0 +1,25 @@
+flask==3.0.3
+python-dotenv==1.0.1
+gunicorn==22.0.0
+
+# LLM + multi-agent orchestration
+groq==0.9.0
+httpx==0.27.2
+langgraph==0.2.34
+langchain-core==0.3.15
+langchain-groq==0.2.0
+pydantic==2.8.2
+
+# Visual generation (programmatic animation)
+manim==0.18.1
+
+# Narration (fully local, free, no account/API key needed)
+piper-tts
+
+# Final video assembly (narration + animation -> one file) is done via
+# direct ffmpeg subprocess calls in assembler_service.py, relying on the
+# SYSTEM ffmpeg -- already confirmed present (Manim's own rendering
+# depends on it, and that already worked in your smoke test), and
+# explicitly installed in the Dockerfile for the Render deployment.
+
+flask-cors==4.0.1

@@ -1,0 +1,11 @@
+.env
+venv/
+__pycache__/
+*.pyc
+media/
+*.mp4
+*.wav
+*.onnx
+*.onnx.json
+jobs.db
+pipeline_output/

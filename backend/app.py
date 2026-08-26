@@ -1,0 +1,114 @@
+"""
+app.py
+"""
+
+import threading
+from flask import Flask, jsonify, request, send_file
+from flask_cors import CORS
+
+from job_service import init_db, create_job, update_job, get_job
+from orchestrator import run_pipeline
+
+app = Flask(__name__)
+
+# Allows the Next.js frontend (running on a different origin/port) to
+# call this API. Scoped to specific origins rather than "*" -- this is
+# a real API with a background job queue, no reason to let literally
+# any website on the internet trigger jobs on it.
+CORS(app, origins=[
+    "http://localhost:3000",       # local Next.js dev server
+    "http://127.0.0.1:3000",
+    # add your deployed Vercel URL here once you deploy, e.g.:
+    # "https://study-video-frontend.vercel.app",
+])
+
+init_db()
+
+MAX_INSTRUCTIONS_LENGTH = 500  # keep prompts bounded -- this gets appended to two separate LLM calls per shot
+
+
+def _run_job_in_background(job_id: str, topic: str, theme: str, instructions: str):
+    """
+    Runs the full multi-agent pipeline in a background thread so the
+    original HTTP request can return immediately with a job_id, instead
+    of the client hanging for several minutes waiting for a synchronous
+    response (and likely hitting a timeout regardless).
+    """
+    update_job(job_id, status="running")
+    try:
+        final_video_path = run_pipeline(topic, theme, instructions)
+        update_job(job_id, status="completed", video_path=final_video_path)
+    except Exception as e:
+        update_job(job_id, status="failed", error=str(e))
+
+
+@app.route("/generate-video", methods=["POST"])
+def generate_video():
+    data = request.get_json()
+
+    if not data or "topic" not in data or not data["topic"].strip():
+        return jsonify({"error": "Please provide a non-empty 'topic' field"}), 400
+
+    topic = data["topic"].strip()
+
+    # Video's visual theme -- defaults to "light" if the frontend didn't
+    # send one (keeps this endpoint backward-compatible with any older
+    # client / your earlier curl tests that only sent "topic").
+    theme = data.get("theme", "light")
+    if theme not in ("light", "dark"):
+        return jsonify({"error": "theme must be 'light' or 'dark'"}), 400
+
+    # OPTIONAL free-text instructions from the user (e.g. "keep it
+    # beginner-friendly", "avoid highlight boxes", "focus on time
+    # complexity"). Empty string if not provided -- every downstream
+    # prompt treats "" as "no extra constraints, use your own judgment."
+    instructions = (data.get("instructions") or "").strip()
+    if len(instructions) > MAX_INSTRUCTIONS_LENGTH:
+        return jsonify({
+            "error": f"instructions must be under {MAX_INSTRUCTIONS_LENGTH} characters"
+        }), 400
+
+    job_id = create_job(topic)
+
+    # daemon=True so this thread doesn't block the server from shutting
+    # down cleanly if needed -- it's a background worker, not the main flow.
+    thread = threading.Thread(
+        target=_run_job_in_background,
+        args=(job_id, topic, theme, instructions),
+        daemon=True,
+    )
+    thread.start()
+
+    return jsonify({"job_id": job_id, "status": "pending"}), 202
+
+
+@app.route("/video-status/<job_id>", methods=["GET"])
+def video_status(job_id):
+    job = get_job(job_id)
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+
+    response = {"job_id": job["id"], "topic": job["topic"], "status": job["status"]}
+    if job["status"] == "failed":
+        response["error"] = job["error"]
+    return jsonify(response)
+
+
+@app.route("/download-video/<job_id>", methods=["GET"])
+def download_video(job_id):
+    job = get_job(job_id)
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+    if job["status"] != "completed":
+        return jsonify({"error": f"Job is not complete yet (status: {job['status']})"}), 400
+
+    return send_file(job["video_path"], mimetype="video/mp4", as_attachment=True)
+
+
+@app.route("/", methods=["GET"])
+def health_check():
+    return jsonify({"status": "Study-Material-to-Video Agent backend is running"})
+
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5000, threaded=True, use_reloader=False)
