@@ -18,6 +18,8 @@ app = Flask(__name__)
 CORS(app, origins=[
     "http://localhost:3000",       # local Next.js dev server
     "http://127.0.0.1:3000",
+    "https://ai-study-video-generator.vercel.app",
+])
     # add your deployed Vercel URL here once you deploy, e.g.:
     # "https://study-video-frontend.vercel.app",
 ])
