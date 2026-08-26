@@ -52,4 +52,4 @@ COPY . .
 # whole video could genuinely take minutes. Without raising this, gunicorn
 # would kill the worker mid-render on any real request. This is a new
 # consideration this project introduces that Study Companion never needed.
-CMD gunicorn app:app --bind 0.0.0.0:$PORT --timeout 300
+CMD gunicorn app:app --bind 0.0.0.0:$PORT --timeout 600 --workers 1
