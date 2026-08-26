@@ -1,6 +1,7 @@
 """
 app.py
 """
+
 import re
 import threading
 from flask import Flask, jsonify, request, send_file
@@ -11,18 +12,19 @@ from orchestrator import run_pipeline
 
 app = Flask(__name__)
 
-# Allows the Next.js frontend (running on a different origin/port) to
-# call this API. Scoped to specific origins rather than "*" -- this is
-# a real API with a background job queue, no reason to let literally
-# any website on the internet trigger jobs on it.
+# Allows the Next.js frontend to call this API. Vercel gives every
+# deployment of the same project several valid URLs -- a clean production
+# domain AND team/project-scoped variants with random hashes (e.g.
+# https://ai-study-video-generator-ptdfzp7xm-heena-aim124-5180s-projects.vercel.app)
+# -- all pointing at the same live site. Hardcoding just the clean domain
+# missed the scoped variant actually being used in the browser, so this
+# matches ANY subdomain under the project's Vercel namespace via regex,
+# not just one exact string.
 CORS(app, origins=[
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://ai-study-video-generator.vercel.app",
-    re.compile(r"https://ai-study-video-generator-.*\.vercel\.app"),
-])
-    # add your deployed Vercel URL here once you deploy, e.g.:
-    # "https://study-video-frontend.vercel.app",
+    re.compile(r"^https://ai-study-video-generator.*\.vercel\.app$"),
 ])
 
 init_db()
@@ -54,17 +56,10 @@ def generate_video():
 
     topic = data["topic"].strip()
 
-    # Video's visual theme -- defaults to "light" if the frontend didn't
-    # send one (keeps this endpoint backward-compatible with any older
-    # client / your earlier curl tests that only sent "topic").
     theme = data.get("theme", "light")
     if theme not in ("light", "dark"):
         return jsonify({"error": "theme must be 'light' or 'dark'"}), 400
 
-    # OPTIONAL free-text instructions from the user (e.g. "keep it
-    # beginner-friendly", "avoid highlight boxes", "focus on time
-    # complexity"). Empty string if not provided -- every downstream
-    # prompt treats "" as "no extra constraints, use your own judgment."
     instructions = (data.get("instructions") or "").strip()
     if len(instructions) > MAX_INSTRUCTIONS_LENGTH:
         return jsonify({
@@ -73,8 +68,6 @@ def generate_video():
 
     job_id = create_job(topic)
 
-    # daemon=True so this thread doesn't block the server from shutting
-    # down cleanly if needed -- it's a background worker, not the main flow.
     thread = threading.Thread(
         target=_run_job_in_background,
         args=(job_id, topic, theme, instructions),
