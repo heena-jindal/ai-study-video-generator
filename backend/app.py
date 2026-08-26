@@ -1,7 +1,7 @@
 """
 app.py
 """
-
+import re
 import threading
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
@@ -16,9 +16,10 @@ app = Flask(__name__)
 # a real API with a background job queue, no reason to let literally
 # any website on the internet trigger jobs on it.
 CORS(app, origins=[
-    "http://localhost:3000",       # local Next.js dev server
+    "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://ai-study-video-generator.vercel.app",
+    re.compile(r"https://ai-study-video-generator-.*\.vercel\.app"),
 ])
     # add your deployed Vercel URL here once you deploy, e.g.:
     # "https://study-video-frontend.vercel.app",
