@@ -30,4 +30,5 @@ USER appuser
 # Hugging Face Spaces expects traffic on port 7860
 EXPOSE 7860
 
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:7860", "--timeout", "600", "--workers", "1"]
+# Change the last line of your Dockerfile to:
+CMD ["sh", "-c", "gunicorn app:app --bind 0.0.0.0:${PORT:-8080} --timeout 600 --workers 1"]
