@@ -12,6 +12,25 @@ from orchestrator import run_pipeline
 
 app = Flask(__name__)
 
+import gradio as gr
+from app import app as flask_app  # Import your existing Flask app instance
+
+# Keep your Flask routes active in the background
+# Gradio automatically serves the web interface and handles the 7860 port binding
+
+def status():
+    return "Backend is live with 16GB RAM!"
+
+demo = gr.Interface(
+    fn=status,
+    inputs=None,
+    outputs="text",
+    title="Manim AI Agent Server"
+)
+
+if __name__ == "__main__":
+    demo.launch(server_name="0.0.0.0", server_port=7860)
+
 # Allows the Next.js frontend to call this API. Vercel gives every
 # deployment of the same project several valid URLs -- a clean production
 # domain AND team/project-scoped variants with random hashes (e.g.
