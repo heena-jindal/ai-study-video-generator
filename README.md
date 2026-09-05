@@ -18,6 +18,12 @@
 
 ---
 
+### 📊 Project Highlights
+
+| 🤖 AI Agents | 🔊 TTS | 🎨 Visuals | 🎬 Assembly |
+|---|---|---|---|
+| 4 specialized agents | Piper TTS | Manim | FFmpeg |
+
 ## 📺 Demo
 
 <details> <summary>☀️ Watch Light Mode</summary>
@@ -42,6 +48,20 @@ https://github.com/heena-jindal/ai-study-video-generator/raw/refs/heads/main/dar
 
 ---
 
+## 📑 Contents
+
+* [🎬 Demo](#-demo)
+* [⚠️ Deployment Status](#️-deployment-status)
+* [🧠 How It Works](#-how-it-works)
+* [✨ Features](#-features)
+* [🛠️ Tech Stack](#️-tech-stack)
+* [🚀 Setup](#-setup)
+* [📡 API](#-api)
+* [🏗️ Design Decisions](#️-design-decisions)
+* [🐞 Known Limitations](#-known-limitations)
+* [🗺️ Roadmap](#️-roadmap)
+
+
 ## ⚠️ Deployment Status
 
 | Component | Status |
@@ -52,6 +72,7 @@ https://github.com/heena-jindal/ai-study-video-generator/raw/refs/heads/main/dar
 The backend needs more memory than most free hosting tiers provide. Full details, evidence, and how to run it yourself → **[DEPLOYMENT.md](DEPLOYMENT.md)**
 
 ---
+
 
 ## 🧠 How It Works
 
@@ -113,22 +134,48 @@ A full render takes several minutes, so the backend returns a `job_id` immediate
 
 ---
 
-## ✨ Features
-
-- 🌗 **Light/dark theme** — for the website itself *and* independently for the generated video's own visual style
-- ✍️ **Optional custom instructions** — steer tone or visual style per video (*"keep it beginner-friendly"*, *"avoid highlight boxes"*) without touching code; ignored gracefully if left blank
-- 🎯 **Consistent example data** — the Planner commits to one dataset for the whole video, preventing topic drift and abstract/generic visuals
-- 🔁 **Self-correcting renders** — the Visual Agent retries failed Manim renders with the real error message fed back to the LLM
-- 📊 **Async job queue** with clean status polling (`pending` → `running` → `completed`/`failed`)
-
----
-
 ## 🛠️ Tech Stack
 
-**Backend** — Flask · LangGraph · Groq · Manim Community · Piper TTS · ffmpeg · SQLite
-**Frontend** — Next.js 14 · TypeScript · Tailwind CSS
+| Area | Technologies |
+|---|---|
+| 🧠 AI Orchestration | LangGraph, LLM Agents |
+| ✍️ Content Generation | LLM-based Planning & Narration |
+| 🔊 Text-to-Speech | Piper TTS |
+| 🎨 Visual Generation | Manim |
+| 🎬 Video Processing | FFmpeg |
+| ⚙️ Backend | Python, Flask |
+| 🗄️ Database | SQLite |
+| 🧪 Testing | Pytest |
+| 🐳 Deployment | Docker, Gunicorn |
+| 🌐 Frontend | HTML, CSS, JavaScript |
+
+## ✨ Key Features
+
+- 🤖 **Multi-Agent AI Pipeline** — Specialized agents handle planning, narration, visual generation, and video assembly.
+- 🧠 **LLM-Based Lesson Planning** — Converts a learning topic into structured educational scenes with consistent examples.
+- 🔊 **AI-Powered Narration** — Generates narration and converts it into speech using Piper TTS.
+- 🎨 **Programmatic Visual Generation** — Generates Manim animations to visually explain concepts.
+- ⏱️ **Audio-Aware Animation** — Uses the actual generated narration duration to synchronize visual scenes.
+- 🔄 **Automatic Render Retry** — Failed Manim renders are regenerated using the encountered rendering error.
+- 🎬 **Automated Video Assembly** — Combines generated visuals and narration into a final educational video using FFmpeg.
+- ⚙️ **Asynchronous Job Processing** — Handles long-running video generation without blocking the API request.
+- 🗄️ **Persistent Job Tracking** — Stores generation status and job information using SQLite.
+- 🧪 **Tested Pipeline Components** — Includes tests for core generation and processing services.
 
 ---
+
+## 🧩 Engineering Challenges & Solutions
+
+| Challenge | Solution |
+|---|---|
+| ⏱️ Narration and animation durations could drift apart | Generated narration first and passed the **actual audio duration** to the Visual Agent for synchronization. |
+| 📊 Inconsistent examples across generated scenes | The Planner Agent creates and commits to a consistent example dataset before downstream generation. |
+| 🎨 Manim code can fail during rendering | Added an automatic retry mechanism that feeds the rendering error back to the Visual Agent for regeneration. |
+| 🎬 Video processing complexity | Used direct **FFmpeg** commands for reliable video/audio concatenation. |
+| ⚙️ Long-running generation requests | Implemented asynchronous job processing so video generation doesn't block the API request. |
+| 💾 Tracking long-running jobs | Added SQLite-based persistent job status and metadata. |
+| 🐳 Limited deployment resources | Documented the memory constraints encountered during Manim rendering and provided a Docker-based deployment setup. |
+
 
 ## 🚀 Setup
 
@@ -159,15 +206,29 @@ docker run -p 5000:5000 --env-file .env study-video-agent
 
 ---
 
-## 📡 API
+## 📡 API Endpoints
 
-| Endpoint | Method | Purpose |
-|---|---|---|
-| `/generate-video` | POST | Start a job. Body: `{ topic, theme?, instructions? }`. Returns `{ job_id, status }` immediately (202). |
-| `/video-status/<job_id>` | GET | Poll status: `pending` / `running` / `completed` / `failed` (+ `error` if failed). |
-| `/download-video/<job_id>` | GET | Download the finished `.mp4` once completed. |
+| Endpoint                   | Method | Purpose                                               |
+| -------------------------- | ------ | ----------------------------------------------------- |
+| `/generate-video`          | `POST` | Starts a video generation job and returns a `job_id`. |
+| `/video-status/<job_id>`   | `GET`  | Tracks the current generation status.                 |
+| `/download-video/<job_id>` | `GET`  | Downloads the generated `.mp4` after completion.      |
 
----
+### Example Workflow
+
+```text
+POST /generate-video
+        ↓
+     job_id
+        ↓
+GET /video-status/<job_id>
+        ↓
+pending → running → completed
+        ↓
+GET /download-video/<job_id>
+        ↓
+     🎬 video.mp4
+```
 
 ## 🏗️ Design Decisions
 
