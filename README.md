@@ -22,7 +22,7 @@
 
 | Light theme | Dark theme |
 |---|---|
-| 🎥 [Watch (light)](#) | 🎥 [Watch (dark)](dark-theme-demo.mp4) |
+| 🎥 [Watch (light)](light-theme-demo.mp4) | 🎥 [Watch (dark)](dark-theme-demo.mp4) |
 
 *Replace both links above with your uploaded videos — either upload the `.mp4` files directly to the repo (e.g. in a `/demo` folder, GitHub renders them inline) or link to YouTube (unlisted is fine).*
 
