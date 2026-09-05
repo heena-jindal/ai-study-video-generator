@@ -19,6 +19,17 @@ export interface JobStatusResponse {
 
 export class ApiError extends Error {}
 
+// Shown when the fetch itself fails (network/CORS/unreachable) -- this
+// covers the deployed case where the backend isn't publicly hosted
+// (see DEPLOYMENT.md). A generic "can't reach the backend" message reads
+// as a bug; this one explains the actual, documented reason and points
+// people toward proof the pipeline genuinely works.
+const BACKEND_UNREACHABLE_MESSAGE =
+  "This project's backend isn't running right now — it needs more memory " +
+  "than most free hosting tiers provide (see DEPLOYMENT.md for details). " +
+  "Check out the demo videos in the README, or clone the repo and run it " +
+  "locally to see the full pipeline work end to end.";
+
 export async function startVideoJob(
   topic: string,
   theme: "light" | "dark" = "light",
@@ -32,9 +43,7 @@ export async function startVideoJob(
       body: JSON.stringify({ topic, theme, instructions }),
     });
   } catch {
-    throw new ApiError(
-      "Can't reach the backend right now. Make sure it's running and try again."
-    );
+    throw new ApiError(BACKEND_UNREACHABLE_MESSAGE);
   }
 
   const data = await safeJson(res);
@@ -51,7 +60,7 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResponse> {
   try {
     res = await fetch(`${API_BASE}/video-status/${jobId}`);
   } catch {
-    throw new ApiError("Lost connection to the backend while checking status.");
+    throw new ApiError(BACKEND_UNREACHABLE_MESSAGE);
   }
 
   const data = await safeJson(res);
