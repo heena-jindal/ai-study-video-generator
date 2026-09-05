@@ -20,11 +20,23 @@
 
 ## 📺 Demo
 
-| Light theme | Dark theme |
-|---|---|
-| 🎥 [Watch (light)](light-theme-demo.mp4) | 🎥 [Watch (dark)]([dark-theme-demo.mp4](https://github.com/heena-jindal/ai-study-video-generator/blob/main/dark-theme-demo.mp4)) |
+<details> <summary>☀️ Watch Light Mode</summary>
 
-*Replace both links above with your uploaded videos — either upload the `.mp4` files directly to the repo (e.g. in a `/demo` folder, GitHub renders them inline) or link to YouTube (unlisted is fine).*
+<br>
+
+https://github.com/heena-jindal/ai-study-video-generator/raw/refs/heads/main/light-theme-demo.mp4
+
+</details>
+
+<details> <summary>🌙 Watch Dark Mode</summary>
+
+<br>
+
+https://github.com/heena-jindal/ai-study-video-generator/raw/refs/heads/main/dark-theme-demo.mp4
+
+</details>
+
+
 
 > **🌐 [Live frontend](#)** — *[ Vercel URL](https://ai-study-video-generator.vercel.app/)* — the UI is deployed and browsable; see [Deployment Status](DEPLOYMENT.md) for why video generation isn't live on it.
 
