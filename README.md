@@ -26,7 +26,7 @@
 
 *Replace both links above with your uploaded videos — either upload the `.mp4` files directly to the repo (e.g. in a `/demo` folder, GitHub renders them inline) or link to YouTube (unlisted is fine).*
 
-> **🌐 [Live frontend](#)** — *your Vercel URL* — the UI is deployed and browsable; see [Deployment Status](DEPLOYMENT.md) for why video generation isn't live on it.
+> **🌐 [Live frontend](#)** — *[ Vercel URL](https://ai-study-video-generator.vercel.app/)* — the UI is deployed and browsable; see [Deployment Status](DEPLOYMENT.md) for why video generation isn't live on it.
 
 ---
 
