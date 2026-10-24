@@ -147,7 +147,7 @@ A full render takes several minutes, so the backend returns a `job_id` immediate
 | 🗄️ Database | SQLite |
 | 🧪 Testing | Pytest |
 | 🐳 Deployment | Docker, Gunicorn |
-| 🌐 Frontend | HTML, CSS, JavaScript |
+| 🌐 Frontend | Next.js 14, React, TypeScript |
 
 ## ✨ Key Features
 
@@ -182,7 +182,9 @@ A full render takes several minutes, so the backend returns a `job_id` immediate
 ### Backend
 ```bash
 cd backend
-pip install -r requirements.txt --break-system-packages
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+pip install -r requirements.txt
 cp .env.example .env   # add your GROQ_API_KEY
 python app.py
 ```
